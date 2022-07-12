@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	Version   = ""
+	Version   = "jbohanon-no-stash"
 	CommitSHA = ""
 
 	readmeNames  = []string{"README.md", "README"}
@@ -208,7 +208,7 @@ func execute(cmd *cobra.Command, args []string) error {
 
 	// TUI running on cwd
 	case 0:
-		return runTUI("", false)
+		return runTUI("")
 
 	// TUI with possible dir argument
 	case 1:
@@ -218,7 +218,7 @@ func execute(cmd *cobra.Command, args []string) error {
 		if err == nil && info.IsDir() {
 			p, err := filepath.Abs(args[0])
 			if err == nil {
-				return runTUI(p, false)
+				return runTUI(p)
 			}
 		}
 		fallthrough
@@ -313,7 +313,7 @@ func executeCLI(cmd *cobra.Command, src *source, w io.Writer) error {
 	return nil
 }
 
-func runTUI(workingDirectory string, stashedOnly bool) error {
+func runTUI(workingDirectory string) error {
 	// Read environment to get debugging stuff
 	var cfg ui.Config
 	if err := babyenv.Parse(&cfg); err != nil {
@@ -335,11 +335,7 @@ func runTUI(workingDirectory string, stashedOnly bool) error {
 	cfg.GlamourMaxWidth = width
 	cfg.GlamourStyle = style
 
-	if stashedOnly {
-		cfg.DocumentTypes.Add(ui.StashedDoc, ui.NewsDoc)
-	} else if localOnly {
-		cfg.DocumentTypes.Add(ui.LocalDoc)
-	}
+	cfg.DocumentTypes.Add(ui.LocalDoc)
 
 	// Run Bubble Tea program
 	p := ui.NewProgram(cfg)
@@ -393,10 +389,6 @@ func init() {
 	viper.SetDefault("style", "auto")
 	viper.SetDefault("width", 0)
 	viper.SetDefault("local", "false")
-
-	// Stash
-	stashCmd.PersistentFlags().StringVarP(&memo, "memo", "m", "", "memo/note for stashing")
-	rootCmd.AddCommand(stashCmd)
 
 	rootCmd.AddCommand(configCmd)
 }
